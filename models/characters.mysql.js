@@ -18,7 +18,6 @@ Characters.findAll = (result) => {
             result(err,null);
             return
         }
-        // console.log('Voici vos personnages' , res);
         result(null,res);
     })
 }

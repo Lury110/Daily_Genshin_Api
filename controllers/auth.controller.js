@@ -10,14 +10,23 @@ function signToken(userId) {
     );
 }
 
-exports.register = async (req, res) => {
+function makeRegisterHandler(UserModel = User, hashFn = bcrypt.hash) {
+    return async (req, res) => {
     try {
         const { pseudo, email, password } = req.body;
 
-        // hash du mot de passe
-        const hash = await bcrypt.hash(password, 12);
+        if (!email) {
+            return res.status(400).json({
+                message: 'Données invalides',
+                errors: { email: ['Email requis'] }
+            })
+        }
 
-        const user = await User.create({
+        // hash du mot de passe
+        const hash = await hashFn(password, 12);
+
+        // const user = await User.create({
+        const user = await UserModel.create({
             pseudo,
             email: email.toLowerCase().trim(),
             password: hash
@@ -34,8 +43,11 @@ exports.register = async (req, res) => {
             return res.status(409).json({ message: 'Cet email est déjà utilisé.' });
         }
         return res.status(500).json({ message: 'Erreur serveur', details: err.message });
-    }
-};
+    }}
+}
+
+exports.register = makeRegisterHandler();
+exports._makeRegisterHandler = makeRegisterHandler;
 
 exports.login = async (req, res) => {
     try {
